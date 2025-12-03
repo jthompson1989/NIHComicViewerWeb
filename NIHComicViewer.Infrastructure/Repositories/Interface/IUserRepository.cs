@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using NIHComicViewer.Infrastructure.Entities;
 
-namespace NIHComicViewer.Infrastructure.Repositories
+namespace NIHComicViewer.Infrastructure.Repositories.Interface
 {
     public interface IUserRepository
     {

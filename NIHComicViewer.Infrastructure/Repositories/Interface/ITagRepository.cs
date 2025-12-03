@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace NIHComicViewer.Infrastructure.Repositories
+namespace NIHComicViewer.Infrastructure.Repositories.Interface
 {
     public interface ITagRepository
     {
