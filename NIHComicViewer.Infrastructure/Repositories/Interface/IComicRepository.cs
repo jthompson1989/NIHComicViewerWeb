@@ -5,11 +5,11 @@ using System.Text;
 using System.Threading.Tasks;
 using NIHComicViewer.Infrastructure.Entities;
 
-namespace NIHComicViewer.Infrastructure.Repositories
+namespace NIHComicViewer.Infrastructure.Repositories.Interface
 {
     public interface IComicRepository
     {
-        Task<List<Comic>> GetComicsAsync();
+        Task<List<Comic>> GetComicsAsync(int pageNumber = 1, int count = 20);
         Task<Comic?> GetComicByIdAsync(long id);
         Task<List<Comic>> GetComicsByAuthorAsync(string author, int pageNumber = 1, int count = 20);
         Task<List<Comic>> GetComicsByLanguageAsync(string language, int pageNumber = 1, int count = 20);
