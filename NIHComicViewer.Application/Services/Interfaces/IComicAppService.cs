@@ -23,7 +23,7 @@ namespace NIHComicViewer.Application.Services.Interfaces
         /// A <see cref="Task{ComicModel}"/> that represents the asynchronous operation.
         /// The task result contains the <see cref="ComicModel"/> if found; otherwise, <c>null</c>.
         /// </returns>
-        Task<ComicModel> GetComicByIdAsync(long id);
+        Task<ComicModel?> GetComicByIdAsync(long id);
 
         /// <summary>
         /// Retrieves a paginated list of comics.
