@@ -1,5 +1,6 @@
 ﻿using NIHComicViewer.Application.Models;
 using NIHComicViewer.Application.Services.Interfaces;
+using NIHComicViewer.Infrastructure.Repositories.Interface;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,6 +11,12 @@ namespace NIHComicViewer.Application.Services
 {
     public class ComicAppService : IComicAppService
     {
+        private IUnitOfWork _unitOfWork;
+        public ComicAppService(IUnitOfWork unitOfWork) 
+        {
+            _unitOfWork = unitOfWork;
+        }
+
         public async Task<bool> AddComicAsync(ComicModel comicModel)
         {
             throw new NotImplementedException();
@@ -20,9 +27,26 @@ namespace NIHComicViewer.Application.Services
             throw new NotImplementedException();
         }
 
-        public async Task<ComicModel> GetComicByIdAsync(long id)
+        public async Task<ComicModel?> GetComicByIdAsync(long id)
         {
-            throw new NotImplementedException();
+            var comic = await _unitOfWork.ComicRepository.GetComicByIdAsync(id);
+            if(comic != null)
+            {
+                return new ComicModel()
+                {
+                    Title = comic.Name,
+                    Author = comic.Author,
+                    Language = comic.Language ?? "",
+                    CoverImagePath = comic.Cover ?? "",
+                    CreatedAt = comic.CreatedDate ?? DateTime.MinValue,
+                    UpdatedAt = comic.ModifiedDate ?? DateTime.MinValue,
+                    Id = (int)comic.Id,
+                };
+            }
+            else
+            {
+                return null;
+            }
         }
 
         public async Task<List<ComicModel>> GetComicsAsync(int pageNumber = 1, int count = 20)
