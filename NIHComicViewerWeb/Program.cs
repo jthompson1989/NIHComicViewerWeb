@@ -11,16 +11,24 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 builder.Services.AddRazorPages();
 
-builder.Services.AddDbContextFactory<NihcomicContext>(options =>
+// Use request-scoped DbContext so repositories and UnitOfWork can accept NihcomicContext via ctor.
+builder.Services.AddDbContext<NihcomicContext>(options =>
 {
     var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
-    var connectionStringBuilder = new NpgsqlConnectionStringBuilder(connectionString);
-    connectionStringBuilder.MaxPoolSize = 100;
-    connectionStringBuilder.MinPoolSize = 1;   // Minimum number of connections to keep in the pool
-    connectionStringBuilder.ConnectionIdleLifetime = 300; // How long a connection can be idle before being removed (in seconds)
-    connectionStringBuilder.ConnectionPruningInterval = 10; // How often to check for idle connections (in seconds)
-    connectionStringBuilder.Timeout = 30; // Connection timeout in seconds
-    connectionStringBuilder.CommandTimeout = 30; // Command timeout in seconds
+    if (string.IsNullOrWhiteSpace(connectionString))
+    {
+        throw new InvalidOperationException("Connection string 'DefaultConnection' is not configured.");
+    }
+
+    var connectionStringBuilder = new NpgsqlConnectionStringBuilder(connectionString)
+    {
+        MaxPoolSize = 100,
+        MinPoolSize = 1,
+        ConnectionIdleLifetime = 300,
+        ConnectionPruningInterval = 10,
+        Timeout = 30,
+        CommandTimeout = 30
+    };
 
     options.UseNpgsql(connectionStringBuilder.ToString(),
         x =>
@@ -34,30 +42,23 @@ builder.Services.AddDbContextFactory<NihcomicContext>(options =>
         });
 });
 
+// Repositories — scoped so they share the same request DbContext instance.
 builder.Services.AddScoped<IComicRepository, ComicRepository>();
 builder.Services.AddScoped<IComicPageRepository, ComicPageRepository>();
 builder.Services.AddScoped<ITagRepository, TagRepository>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 
-// Unit of Work and Repository registrations
+// Unit of Work — single, correct scoped registration.
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
-builder.Services.AddScoped<IUnitOfWork>(unitOfWork =>
-    new UnitOfWork(
-        unitOfWork.GetRequiredService<NihcomicContext>(),
-        unitOfWork.GetRequiredService<IComicRepository>(),
-        unitOfWork.GetRequiredService<IComicPageRepository>(),
-        unitOfWork.GetRequiredService<ITagRepository>(),
-        unitOfWork.GetRequiredService<IUserRepository>()
-    )
-);
 
 // Application service registrations
 builder.Services.AddScoped<IComicAppService, ComicAppService>();
 builder.Services.AddScoped<IComicPageAppService, ComicPageAppService>();
 builder.Services.AddScoped<ITagAppService, TagAppService>();
 builder.Services.AddScoped<IUserAppService, UserAppService>();
-builder.Services.AddHttpClient();
 
+// HTTP clients
+builder.Services.AddHttpClient();
 
 var app = builder.Build();
 
